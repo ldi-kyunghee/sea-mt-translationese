@@ -1,0 +1,12 @@
+data_path: /local_datasets/t-index_data/wild/pointwise.jsonl
+prompt_field: source
+completion_positive_field: translation_A
+completion_negative_field: translation_B
+prompt_template_positive: "Translate the following text into Malay.\n\n{input}"
+prompt_template_negative: "Translate the following text into Malay.\n\n{input}"
+batch_size: 4
+num_proc: 10
+max_length: 1024
+model_args:
+  torch_dtype: bfloat16
+device: cuda

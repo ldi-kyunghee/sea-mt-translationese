@@ -1,0 +1,13 @@
+data_path: /local_datasets/t-index_data/synthetic/*/valid.jsonl
+validation_path: /local_datasets/t-index_data/synthetic/parallel_asian_treebank_qwen/valid.jsonl
+prompt_field: source
+completion_positive_field: foreignization
+completion_negative_field: domestication
+prompt_template_positive: "Translate the following text into Malay.\n\n{input}"
+prompt_template_negative: "Translate the following text into Malay.\n\n{input}"
+batch_size: 4
+num_proc: 10
+max_length: 1024
+model_args:
+  torch_dtype: bfloat16
+device: cuda

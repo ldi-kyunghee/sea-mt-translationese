@@ -1,0 +1,7 @@
+_old/*
+.vscode/
+logs/
+*/__pycache__
+submit_job.sh
+translationese_eval
+t-index/models

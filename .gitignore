@@ -21,3 +21,6 @@ logs/
 submit_job.sh
 translationese_eval
 t-index/models
+
+# common dirs
+wandb/

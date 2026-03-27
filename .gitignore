@@ -1,3 +1,19 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+.python-version
+pyproject.toml
+README.md
+uv.lock
+
+# ariel
 _old/*
 .vscode/
 logs/

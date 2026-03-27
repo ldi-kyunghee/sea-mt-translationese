@@ -1,0 +1,29 @@
+/home/dania/sea-mt/.venv/lib/python3.12/site-packages/malaya/tokenizer.py:214: FutureWarning: Possible nested set at position 3397
+  self.tok = re.compile(r'({})'.format('|'.join(pipeline)))
+/home/dania/sea-mt/.venv/lib/python3.12/site-packages/malaya/tokenizer.py:214: FutureWarning: Possible nested set at position 3927
+  self.tok = re.compile(r'({})'.format('|'.join(pipeline)))
+wandb: [wandb.login()] Loaded credentials for https://api.wandb.ai from WANDB_API_KEY.
+wandb: Currently logged in as: daniazie (daniazie-kyung-hee-university) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: setting up run gz1o2lhb
+wandb: Tracking run with wandb version 0.25.1
+wandb: Run data is saved locally in /home/dania/sea-mt/wandb/run-20260327_122322-gz1o2lhb
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run SFT_parallel_asian_treebank_lr_2e-05_ep_5_wd_0.1_r_64_alpha_256_dropout_0.0
+wandb: ⭐️ View project at https://wandb.ai/daniazie-kyung-hee-university/SEAMT_Apertus-SEA-LION-v4-8B-IT
+wandb: 🚀 View run at https://wandb.ai/daniazie-kyung-hee-university/SEAMT_Apertus-SEA-LION-v4-8B-IT/runs/gz1o2lhb
+Using experimental xIELU CUDA. Enabled torch._dynamo for xIELU CUDA.
+Traceback (most recent call last):
+  File "/home/dania/sea-mt/src/train/sft.py", line 120, in <module>
+    model = AutoModelForCausalLM.from_pretrained(
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dania/sea-mt/.venv/lib/python3.12/site-packages/transformers/models/auto/auto_factory.py", line 381, in from_pretrained
+    return model_class.from_pretrained(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dania/sea-mt/.venv/lib/python3.12/site-packages/transformers/modeling_utils.py", line 4111, in from_pretrained
+    device_map = _get_device_map(model, device_map, max_memory, hf_quantizer)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dania/sea-mt/.venv/lib/python3.12/site-packages/transformers/integrations/accelerate.py", line 373, in _get_device_map
+    hf_quantizer.validate_environment(device_map=device_map)
+  File "/home/dania/sea-mt/.venv/lib/python3.12/site-packages/transformers/quantizers/quantizer_bnb_4bit.py", line 74, in validate_environment
+    raise ValueError(
+ValueError: Some modules are dispatched on the CPU or the disk. Make sure you have enough GPU RAM to fit the quantized model. If you want to dispatch the model on the CPU or the disk while keeping these modules in 32-bit, you need to set `llm_int8_enable_fp32_cpu_offload=True` and pass a custom `device_map` to `from_pretrained`. Check https://huggingface.co/docs/transformers/main/en/main_classes/quantization#offload-between-cpu-and-gpu for more details. 

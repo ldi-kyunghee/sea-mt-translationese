@@ -1,5 +1,6 @@
 {
     "train_micro_batch_size_per_gpu": "auto",
+    "gradient_accumulation_steps": "auto",
     "autotuning": {
         "enabled": true,
         "overwrite": false,
@@ -15,7 +16,8 @@
         "params": {
             "lr": "auto",
             "eps": "auto",
-            "weight_decay": "auto"
+            "weight_decay": "auto",
+            "betas": "auto"
         }
     },
     "bf16": {
@@ -31,12 +33,8 @@
             "pin_memory": true
         },
         "offload_param": {
-            "device": "nvme",
-            "nvme_path": "/dev/nvme0",
-            "pin_memory": true,
-            "buffer_count": 4,
-            "buffer_size": 1e8,
-            "max_in_cpu": 1e9
+            "device": "cpu",
+            "pin_memory": true
         },
         "stage3_gather_16bit_weights_on_model_save": true
     }

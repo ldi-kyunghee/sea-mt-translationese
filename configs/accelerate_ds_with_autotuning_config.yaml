@@ -1,17 +1,13 @@
 compute_environment: LOCAL_MACHINE
 debug: false
 deepspeed_config:
+  autotuning: true
   gradient_clipping: 1.0
   offload_optimizer_device: cpu
-  offload_param_device: nvme
-  offload_param_nvme_path: /dev/nvme0
+  offload_param_device: cpu
   zero3_init_flag: true
   zero3_save_16bit_model: true
   zero_stage: 3
-  autotuning: true
-    args_mapping:
-      train_micro_batch_size_per_gpu: --per_device_train_batch_size
-      gradient_accumulation_steps: --gradient_accumulation_steps
 distributed_type: DEEPSPEED
 downcast_bf16: 'no'
 dynamo_config:

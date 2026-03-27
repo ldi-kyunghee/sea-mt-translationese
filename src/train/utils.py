@@ -1,8 +1,4 @@
 from transformers import PreTrainedTokenizerBase
-from malaya.tokenizer import SentenceTokenizer
-from nltk.tokenize import sent_tokenize
-
-from trl import apply_chat_template
 from evaluate import load
 
 import numpy as np
@@ -14,27 +10,6 @@ def system_prompt_supported(tokenizer):
         return True
     except:
         return False
-
-def format_ALT(examples):
-    ms_tokenizer = SentenceTokenizer()
-    en_texts = [example for example in examples['text_2']]
-    ms_texts = [example for example in examples['text_1']]
-    
-    data = {"src": [], "ref": [], "src_lang": [], "tgt_lang": []}
-    for ms_text, en_text in zip(en_texts, ms_texts):
-        ms_sents = ms_tokenizer.tokenize(ms_text, 5)
-        en_sents = sent_tokenize(en_text)
-
-        if not len(ms_sents) == len(en_sents):
-            ms_sents = sent_tokenize(ms_text)
-        
-        if len(ms_sents) == len(en_sents):
-            for en_sent, ms_sent in zip(en_sents, ms_sents):
-                data['src'].append(en_sent)
-                data['ref'].append(ms_sent)
-                data['src_lang'].append('English')
-                data['tgt_lang'].append('Malay')
-    return data
 
 def format_func(example):
     prompt = [
@@ -100,9 +75,8 @@ def preprocess_dataset(example, tokenizer: PreTrainedTokenizerBase):
             "completion": tokenizer.apply_chat_template(example['completion'], tokenize=False)
         }
     return {
-        "text": apply_chat_template(
+        "text": tokenizer.apply_chat_template(
             example,
-            tokenizer=tokenizer
         )
     }
 

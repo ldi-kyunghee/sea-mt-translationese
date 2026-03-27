@@ -4,8 +4,9 @@ from trl.trainer.sft_trainer import DataCollatorForLanguageModeling
 from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training, PeftModelForCausalLM
 from datasets import load_dataset, concatenate_datasets
 from tokenizers import AddedToken
-from malaya.tokenizer import SentenceTokenizer
-from nltk.tokenize import sent_tokenize
+
+from utils import format_ALT, format_conversational, compute_metrics, preprocess_dataset, postprocess_text
+
 from evaluate import load
 import random
 import numpy as np
@@ -66,71 +67,6 @@ def init_parser():
     parser.set_defaults(bidirectional=False)
     return parser
 
-def format_ALT(examples):
-    en_texts = [example for example in examples['text_2']]
-    ms_texts = [example for example in examples['text_1']]
-    
-    data = {"src": [], "ref": [], "src_lang": [], "tgt_lang": []}
-    for ms_text, en_text in zip(en_texts, ms_texts):
-        ms_sents = ms_tokenizer.tokenize(ms_text, 5)
-        en_sents = sent_tokenize(en_text)
-
-        if not len(ms_sents) == len(en_sents):
-            ms_sents = sent_tokenize(ms_text)
-        
-        if len(ms_sents) == len(en_sents):
-            for en_sent, ms_sent in zip(en_sents, ms_sents):
-                data['src'].append(en_sent)
-                data['ref'].append(ms_sent)
-                data['src_lang'].append('English')
-                data['tgt_lang'].append('Malay')
-    return data
-
-def format_func(example):
-    prompt = [
-        {
-            "role": "user", "content": f"Translate the following sentence from {example['src_lang']} to {example['tgt_lang']}.\n\n{example['src_lang']}: {example['src']}\n\n{example['tgt_lang']}: "
-        }
-    ]
-
-    completion = [
-        {
-            "role": "assistant", "content": example['ref']
-        }
-    ]
-
-    return {'prompt': prompt, 'completion': completion}
-
-def format_conversational(examples):
-    srcs = [example for example in examples['src']]
-    refs = [example for example in examples['ref']]
-    src_langs = [example for example in examples['src_lang']]
-    tgt_langs = [example for example in examples['tgt_lang']] 
-
-    messages = []
-    sys_prompt = "Translate the given sentence from {src_lang} to {tgt_lang}."
-    user_prompt = "{src_lang}: {src}\n\n{tgt_lang}: "
-    for src, ref, src_lang, tgt_lang in zip(srcs, refs, src_langs, tgt_langs):
-        if 'gemma' in args.model.lower():
-            user_prompt = sys_prompt + '\n\n' + user_prompt
-
-        message = [
-            {
-                "role": "user", "content": [{"type": "text", "text": user_prompt.format(src_lang=src_lang, tgt_lang=tgt_lang, src=src)}] if args.is_vl else user_prompt.format(src_lang=src_lang, tgt_lang=tgt_lang, src=src)
-            },
-            {
-                "role": "assistant" if not 'gemma' in args.model.lower() else 'model', "content": [{"type": "text", "text": ref}] if args.is_vl else ref
-            }
-        ]
-
-        if not 'gemma' in args.model.lower():
-            message.append({
-                "role": "system", "content": [{"type": "text", "text": sys_prompt.format(src_lang=src_lang, tgt_lang=tgt_lang)}] if args.is_vl else sys_prompt.format(src_lang=src_lang, tgt_lang=tgt_lang)
-            })
-        messages.append(message)
-
-    return {'messages': messages}
-
 
 def preprocess_logits_for_metrics(logits, labels):
     if isinstance(logits, tuple):
@@ -144,8 +80,7 @@ args = parser.parse_args()
 
 dataset_name = args.dataset.split('/')[-1]
 
-if 'asian_treebank' in dataset_name:
-    ms_tokenizer = SentenceTokenizer()
+
 
 try:
     data_size = int(args.data_size)
@@ -217,37 +152,6 @@ if 'ModelSpace' in args.model:
     base_model.resize_token_embeddings(len(tokenizer))
     del gemma_tokenizer
 
-def preprocess_dataset(example):
-    return apply_chat_template(
-        example,
-        tokenizer=tokenizer
-    )
-
-def postprocess_text(preds, labels):
-    preds = [pred.strip() for pred in preds]
-    labels = [[label.strip()] for label in labels]
-
-    return preds, labels
-
-metric = load('sacrebleu', tokenize='spBLEU-1K')
-def compute_metrics(pred_eval):
-    gc.collect()
-    preds, labels = pred_eval
-    preds = np.where(preds != -100, preds, tokenizer.pad_token_id)
-    decoded_preds = tokenizer.batch_decode(preds, skip_special_tokens=True)
-
-    labels = np.where(labels != -100, labels, tokenizer.pad_token_id)
-    decoded_labels = tokenizer.batch_decode(labels, skip_special_tokens=True)
-
-    decoded_preds, decoded_labels = postprocess_text(decoded_preds, decoded_labels)
-
-    result = metric.compute(predictions=decoded_preds, references=decoded_labels)
-    result = {'spBLEU': result['score']}
-    prediction_lens = [np.count_nonzero(pred != tokenizer.pad_token_id) for pred in preds]
-    result["gen_len"] = np.mean(prediction_lens)
-    result = {k: round(v, 4) for k, v in result.items()}
-    return result
-
 if 'parallel_asian_treebank' in args.dataset:
     dataset = load_dataset(
         args.dataset,
@@ -260,6 +164,7 @@ else:
 if 'parallel_asian_treebank' in dataset_name:
     dataset = dataset.map(format_ALT, remove_columns=['id', 'text_1', 'text_2', 'text_1_name', 'text_2_name'], batched=True)
     col_names = dataset['train'].column_names
+    
 dataset = dataset.map(format_conversational, remove_columns=col_names, batched=True)
 dataset = dataset.map(preprocess_dataset)
 train_set = dataset['train']

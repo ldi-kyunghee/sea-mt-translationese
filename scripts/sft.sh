@@ -1,11 +1,11 @@
 #!/usr/bin/bash
 
 #SBATCH -J space
-#SBATCH --gres=gpu:4
+#SBATCH --gres=gpu:2
 #SBATCH --cpus-per-gpu=8
-#SBATCH --mem=32G
+#SBATCH --mem-per-gpu=64G
 #SBATCH -p batch_grad
-#SBATCH -w ariel-v2
+#SBATCH -w ariel-v10
 #SBATCH -t 1-0
 #SBATCH -o ./logs/slurm-%A.out
 #SBATCH -e ./logs/slurm-err-%A.out
